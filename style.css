@@ -1,0 +1,483 @@
+/* ==========================================================================
+   EsportsBracket — Official Dark Theme Stylesheet
+   PRD Section 13: Visual design, accessibility and UX copy
+   ========================================================================== */
+
+:root {
+  /* Official PRD Color Palette */
+  --eb-bg-page: #0F172A;          /* Page background (Dark slate navy) */
+  --eb-bg-surface: #1E293B;       /* Cards, match boxes, panels */
+  --eb-bg-surface-hover: #334155; /* Interactive hover on surface */
+  --eb-bg-input: #0F172A;         /* Form input background */
+  
+  --eb-text-main: #F1F5F9;        /* Main body text (contrast 16.3:1) */
+  --eb-text-muted: #94A3B8;       /* Times, helper text (contrast 6.9:1) */
+  
+  --eb-primary: #A78BFA;          /* Buttons, links, followed team (contrast 6.4:1) */
+  --eb-primary-hover: #C4B5FD;    /* Primary hover */
+  
+  --eb-live: #F87171;             /* Live match badge (contrast 5.7:1) */
+  --eb-live-pulse: rgba(248, 113, 113, 0.4);
+  
+  --eb-winner: #4ADE80;           /* Winner highlight (contrast 8.9:1) */
+  --eb-winner-bg: rgba(74, 222, 128, 0.15);
+  
+  --eb-border: #334155;           /* Card & box borders */
+  --eb-border-light: #475569;     /* Active borders */
+  
+  --eb-font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Base Body Styles */
+body {
+  background-color: var(--eb-bg-page);
+  color: var(--eb-text-main);
+  font-family: var(--eb-font-family);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tabular Numbers for Scores (PRD Section 13) */
+.tabular-nums, .score-display, .match-score {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Touch Targets: at least 44x44px (PRD Section 12) */
+button, .btn, .nav-link, select, .form-control {
+  min-height: 44px;
+}
+
+/* Navigation Bar */
+.navbar-custom {
+  background-color: var(--eb-bg-surface);
+  border-bottom: 1px solid var(--eb-border);
+  padding: 0.75rem 1rem;
+}
+
+.navbar-brand {
+  color: var(--eb-text-main) !important;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-badge {
+  background: linear-gradient(135deg, var(--eb-primary), #818CF8);
+  color: #0F172A;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.nav-link {
+  color: var(--eb-text-muted) !important;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--eb-primary) !important;
+}
+
+/* Role Switcher Pill */
+.role-badge {
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.role-badge.host {
+  background-color: rgba(167, 139, 250, 0.2);
+  color: var(--eb-primary);
+  border: 1px solid var(--eb-primary);
+}
+
+.role-badge.viewer {
+  background-color: rgba(148, 163, 184, 0.2);
+  color: var(--eb-text-muted);
+  border: 1px solid var(--eb-border);
+}
+
+/* Cards & Surfaces */
+.eb-card {
+  background-color: var(--eb-bg-surface);
+  border: 1px solid var(--eb-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.eb-card:hover {
+  border-color: var(--eb-border-light);
+}
+
+/* Status Badges */
+.badge-live {
+  background-color: var(--eb-live);
+  color: #0F172A;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  animation: pulse-live 2s infinite;
+}
+
+@keyframes pulse-live {
+  0% { box-shadow: 0 0 0 0 var(--eb-live-pulse); }
+  70% { box-shadow: 0 0 0 8px rgba(248, 113, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+}
+
+.badge-upcoming {
+  background-color: var(--eb-bg-surface-hover);
+  color: var(--eb-text-muted);
+  border: 1px solid var(--eb-border);
+}
+
+.badge-done {
+  background-color: rgba(74, 222, 128, 0.2);
+  color: var(--eb-winner);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+}
+
+.badge-bye {
+  background-color: transparent;
+  color: var(--eb-text-muted);
+  border: 1px dashed var(--eb-border);
+}
+
+/* Buttons */
+.btn-primary-eb {
+  background-color: var(--eb-primary);
+  color: #0F172A;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  transition: background-color 0.2s;
+}
+
+.btn-primary-eb:hover {
+  background-color: var(--eb-primary-hover);
+  color: #0F172A;
+}
+
+.btn-secondary-eb {
+  background-color: var(--eb-bg-surface);
+  color: var(--eb-text-main);
+  border: 1px solid var(--eb-border);
+  border-radius: 8px;
+}
+
+.btn-secondary-eb:hover {
+  background-color: var(--eb-bg-surface-hover);
+  color: var(--eb-text-main);
+}
+
+/* Form Controls */
+.form-control, .form-select {
+  background-color: var(--eb-bg-input);
+  border: 1px solid var(--eb-border);
+  color: var(--eb-text-main);
+  border-radius: 8px;
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--eb-bg-input);
+  border-color: var(--eb-primary);
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.25);
+  color: var(--eb-text-main);
+}
+
+.form-control::placeholder {
+  color: var(--eb-text-muted);
+  opacity: 0.7;
+}
+
+/* Toast Notifications (PRD Section 9) */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1080;
+}
+
+.eb-toast {
+  background-color: var(--eb-bg-surface);
+  color: var(--eb-text-main);
+  border: 1px solid var(--eb-border);
+  border-left: 4px solid var(--eb-primary);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================================================
+   Screen S2 — Create Tournament Styles
+   ========================================================================== */
+.preview-match-card {
+  background-color: var(--eb-bg-input);
+  border: 1px solid var(--eb-border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+}
+
+.preview-match-card.has-bye {
+  border-left: 3px solid var(--eb-text-muted);
+  opacity: 0.85;
+}
+
+.team-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.team-pill.seed-badge {
+  font-size: 0.75rem;
+  color: var(--eb-primary);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   Screen S4 — Match Panel Styles (Modal / Offcanvas Drawer)
+   PRD Section 12: Laptop = right-side drawer; Tablet = modal; Mobile = sheet
+   ========================================================================== */
+.offcanvas-eb {
+  background-color: var(--eb-bg-surface) !important;
+  color: var(--eb-text-main) !important;
+  border-left: 1px solid var(--eb-border) !important;
+  width: 440px !important;
+  max-width: 100vw !important;
+}
+
+.offcanvas-header {
+  border-bottom: 1px solid var(--eb-border);
+}
+
+.score-stepper-box {
+  background-color: var(--eb-bg-input);
+  border: 1px solid var(--eb-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.stepper-btn {
+  width: 44px;
+  height: 44px;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background-color: var(--eb-bg-surface);
+  color: var(--eb-text-main);
+  border: 1px solid var(--eb-border);
+}
+
+.stepper-btn:hover {
+  background-color: var(--eb-primary);
+  color: #0F172A;
+  border-color: var(--eb-primary);
+}
+
+.score-display-input {
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+  max-width: 90px;
+  background: transparent;
+  border: none;
+  color: var(--eb-text-main);
+}
+
+.score-display-input:focus {
+  outline: none;
+  background: rgba(167, 139, 250, 0.1);
+  border-radius: 6px;
+}
+
+/* ==========================================================================
+   Screen S3 — Mobile Round Tabs & Bracket View Styling
+   PRD Section 12: Phone (< 576px) = Round tabs showing one round at a time
+   ========================================================================== */
+.round-nav-pill {
+  background-color: var(--eb-bg-input);
+  border: 1px solid var(--eb-border);
+  color: var(--eb-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 0.35rem 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.round-nav-pill:hover {
+  color: var(--eb-text-main);
+  border-color: var(--eb-border-light);
+}
+
+.round-nav-pill.active {
+  background-color: var(--eb-primary);
+  color: #0F172A;
+  border-color: var(--eb-primary);
+}
+
+/* Bracket Column Widths on Desktop */
+@media (min-width: 992px) {
+  .bracket-round-column {
+    min-width: 260px;
+  }
+}
+
+/* ==========================================================================
+   Screen S5 — Live Dashboard, Ticker & Projector Mode
+   PRD Section 8, 10, 12, 13
+   ========================================================================== */
+/* Live Ticker Feed */
+.ticker-container {
+  background-color: var(--eb-bg-input);
+  border: 1px solid var(--eb-border);
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 0.6rem 1rem;
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--eb-bg-surface);
+  border: 1px solid var(--eb-border);
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Live Match Card */
+.live-match-card {
+  background-color: var(--eb-bg-surface);
+  border: 2px solid var(--eb-live);
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(248, 113, 113, 0.2);
+}
+
+/* Followed Team Status Card */
+.followed-team-card {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(30, 41, 59, 0.9));
+  border: 1px solid var(--eb-primary);
+  border-radius: 12px;
+}
+
+/* Champion Banner */
+.champion-banner {
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.25), rgba(30, 41, 59, 0.95));
+  border: 2px solid var(--eb-winner);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 0 25px rgba(74, 222, 128, 0.25);
+  animation: banner-glow 3s infinite alternate;
+}
+
+@keyframes banner-glow {
+  0% { box-shadow: 0 0 15px rgba(74, 222, 128, 0.2); }
+  100% { box-shadow: 0 0 30px rgba(74, 222, 128, 0.4); }
+}
+
+/* Projector Mode Fullscreen (PRD Section 12: Text >= 24px) */
+body.projector-fullscreen {
+  background-color: #070B14 !important;
+  font-size: 1.25rem !important;
+}
+
+body.projector-fullscreen header,
+body.projector-fullscreen footer {
+  display: none !important;
+}
+
+body.projector-fullscreen .projector-text-lg {
+  font-size: 1.75rem !important;
+}
+
+body.projector-fullscreen .projector-score-lg {
+  font-size: 2.75rem !important;
+  font-weight: 900;
+}
+
+/* ==========================================================================
+   Screen S6 — Matches Table Styling
+   PRD Section 8, US-10
+   ========================================================================== */
+.table-eb {
+  color: var(--eb-text-main);
+  vertical-align: middle;
+  background-color: var(--eb-bg-surface);
+  border-color: var(--eb-border);
+}
+
+.table-eb th {
+  background-color: var(--eb-bg-input);
+  color: var(--eb-text-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--eb-border);
+}
+
+.table-eb td {
+  border-bottom: 1px solid var(--eb-border);
+  padding: 0.85rem 0.75rem;
+}
+
+.table-eb tr:hover td {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Accessibility: Visible Focus Indicators (PRD Section 13) */
+:focus-visible {
+  outline: 2px solid var(--eb-primary) !important;
+  outline-offset: 2px !important;
+}
+
+/* Accessibility: Respect Reduced Motion Preferences (PRD Section 11 & 13) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .badge-live {
+    animation: none !important;
+  }
+  .champion-banner {
+    animation: none !important;
+  }
+}
+
+/* Footer */
+footer {
+  margin-top: auto;
+  background-color: var(--eb-bg-surface);
+  border-top: 1px solid var(--eb-border);
+  padding: 1rem 0;
+  font-size: 0.85rem;
+  color: var(--eb-text-muted);
+}
+

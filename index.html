@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EsportsBracket — Tournament Bracket Generator & Live Dashboard</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Custom Dark Esports Theme -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+      <div class="container-fluid px-3">
+        <!-- Brand -->
+        <a class="navbar-brand" href="#tournaments" id="nav-brand">
+          <i class="bi bi-controller text-primary-eb"></i>
+          <span>EsportsBracket</span>
+          <span class="brand-badge">2026</span>
+        </a>
+
+        <!-- Mobile Toggler -->
+        <button class="navbar-toggler text-light border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+          <i class="bi bi-list fs-3"></i>
+        </button>
+
+        <!-- Navbar Links & Controls -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+            <li class="nav-item">
+              <a class="nav-link active" id="nav-tournaments" href="#tournaments">
+                <i class="bi bi-trophy me-1"></i> Tournaments
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="nav-live" href="#live">
+                <i class="bi bi-broadcast text-danger me-1"></i> Live Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="nav-matches" href="#matches">
+                <i class="bi bi-table me-1"></i> Matches Table
+              </a>
+            </li>
+          </ul>
+
+          <!-- Role Switcher & New Tournament Button -->
+          <div class="d-flex align-items-center gap-2">
+            <!-- Host-Only New Tournament Button (PRD S1) -->
+            <button class="btn btn-primary-eb btn-sm d-flex align-items-center gap-1" id="btn-header-new-tournament">
+              <i class="bi bi-plus-circle"></i>
+              <span>New Tournament</span>
+            </button>
+
+            <!-- Role Switcher Dropdown (PRD Section 9: RoleSwitcher) -->
+            <div class="dropdown">
+              <button class="btn btn-secondary-eb btn-sm dropdown-toggle role-badge host" type="button" id="roleDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-gear"></i>
+                <span id="currentRoleText">Host Mode</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" aria-labelledby="roleDropdownBtn">
+                <li><h6 class="dropdown-header text-muted">Switch User Role</h6></li>
+                <li>
+                  <button class="dropdown-item d-flex align-items-center gap-2 active" id="role-select-host" type="button">
+                    <i class="bi bi-shield-lock text-primary"></i> Host (Organizer)
+                  </button>
+                </li>
+                <li>
+                  <button class="dropdown-item d-flex align-items-center gap-2" id="role-select-viewer" type="button">
+                    <i class="bi bi-eye text-info"></i> Viewer (Gamer/Spectator)
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content Container with S1–S6 Screens -->
+  <main class="container py-4 flex-grow-1">
+
+    <!-- Storage Warning Banner (PRD Section 11 Error State) -->
+    <div id="storage-warning-banner" class="alert alert-warning d-none" role="alert">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      <span>Storage blocked or unavailable. Working in temporary memory mode.</span>
+    </div>
+
+    <!-- =========================================================================
+         SCREEN 1: S1 — Tournaments List (Both Host & Viewer)
+         ========================================================================= -->
+    <section id="screen-tournaments" class="screen-view">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="h3 fw-bold mb-1">Tournaments</h2>
+          <p class="text-muted mb-0">Select a tournament to view its bracket, live matches, or manage results.</p>
+        </div>
+      </div>
+
+      <!-- Tournaments Grid Container -->
+      <div class="row g-3" id="tournaments-grid">
+        <!-- Seeded / Dynamic Tournament Cards will render here -->
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SCREEN 2: S2 — Create Tournament (Host Only)
+         PRD Section 8, 11, 12
+         ========================================================================= -->
+    <section id="screen-create" class="screen-view d-none">
+      <div class="mb-4">
+        <a href="#tournaments" class="btn btn-sm btn-secondary-eb mb-2" id="btn-back-to-tournaments">
+          <i class="bi bi-arrow-left me-1"></i> Back to Tournaments
+        </a>
+        <h2 class="h3 fw-bold mb-1">Create New Tournament</h2>
+        <p class="text-muted mb-0">Paste team names to automatically calculate seeding, byes, and tournament pairings.</p>
+      </div>
+
+      <div class="row g-4">
+        <!-- Form Left Column (4 cols on laptop per PRD Section 12) -->
+        <div class="col-lg-5 col-md-12">
+          <div class="eb-card">
+            <h5 class="fw-semibold mb-3"><i class="bi bi-gear-fill text-primary-eb me-2"></i>Tournament Details</h5>
+            
+            <form id="form-create-tournament" onsubmit="return false;">
+              <div class="mb-3">
+                <label for="create-name" class="form-label text-muted small fw-bold">Tournament Name</label>
+                <input type="text" class="form-control" id="create-name" placeholder="e.g. CampusClash 2026" required value="CampusClash 2026">
+              </div>
+
+              <div class="mb-3">
+                <label for="create-game" class="form-label text-muted small fw-bold">Game Title</label>
+                <input type="text" class="form-control" id="create-game" placeholder="e.g. 5v5 Tactical Shooter" required value="5v5 Tactical Shooter">
+              </div>
+
+              <div class="mb-3">
+                <label for="create-date" class="form-label text-muted small fw-bold">Tournament Date</label>
+                <input type="date" class="form-control" id="create-date" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label text-muted small fw-bold">Match Format</label>
+                <div class="d-flex gap-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="create-best-of" id="format-bo1-bo3" value="bo1-bo3" checked>
+                    <label class="form-check-label small" for="format-bo1-bo3">
+                      Best of 1 (Final Best of 3)
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="create-best-of" id="format-bo1" value="bo1">
+                    <label class="form-check-label small" for="format-bo1">
+                      All Best of 1
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="create-teams-textarea" class="form-label text-muted small fw-bold">
+                  Participating Teams <span class="badge bg-secondary-subtle text-muted">4–16 Teams</span>
+                </label>
+                <textarea class="form-control font-monospace" id="create-teams-textarea" rows="9" placeholder="One team per line (4–16 teams)">Team Nova
+Byte Wolves
+Pixel Raiders
+CyberKnights
+Viper Squad
+Phantom Clan
+Nexus Force
+Titan Gaming
+Solaris
+Apex Legends
+Iron Claws
+Shadow Storm</textarea>
+                <div class="form-text text-muted small">One team per line. Unique names, 2–24 characters.</div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label text-muted small fw-bold">Seeding Method</label>
+                <div class="d-flex gap-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="create-seeding" id="seeding-rank" value="rank" checked>
+                    <label class="form-check-label small" for="seeding-rank">
+                      By Rank (as entered)
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="create-seeding" id="seeding-random" value="random">
+                    <label class="form-check-label small" for="seeding-random">
+                      Randomize Seeding
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Validation Error Box -->
+              <div id="create-error-alert" class="alert alert-danger d-none py-2 small" role="alert"></div>
+
+              <button type="button" class="btn btn-primary-eb w-100" id="btn-generate-bracket">
+                <i class="bi bi-magic me-1"></i> Generate Bracket Preview
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Bracket Preview Right Column (7-8 cols on laptop per PRD Section 12) -->
+        <div class="col-lg-7 col-md-12">
+          <div class="eb-card h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h5 class="fw-semibold mb-0"><i class="bi bi-diagram-3 text-primary-eb me-2"></i>Bracket Preview</h5>
+              <div id="preview-bracket-note" class="badge bg-secondary-subtle text-muted border border-secondary">
+                No bracket generated yet
+              </div>
+            </div>
+
+            <!-- Swap Teams Sub-Panel (PRD S2 & US-03) -->
+            <div id="swap-teams-panel" class="p-3 mb-3 rounded bg-dark border border-secondary d-none">
+              <span class="small fw-bold text-muted d-block mb-2"><i class="bi bi-arrow-left-right me-1"></i>Swap Team Seeds (Optional)</span>
+              <div class="row g-2 align-items-center">
+                <div class="col-5">
+                  <select class="form-select form-select-sm" id="swap-select-1"></select>
+                </div>
+                <div class="col-2 text-center text-muted">
+                  <i class="bi bi-arrow-left-right"></i>
+                </div>
+                <div class="col-5">
+                  <select class="form-select form-select-sm" id="swap-select-2"></select>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-secondary-eb w-100 mt-2" id="btn-do-swap">
+                Swap Selected Teams
+              </button>
+            </div>
+
+            <!-- Preview Match List Area -->
+            <div id="preview-matches-container" class="flex-grow-1 overflow-auto border border-secondary border-opacity-50 rounded p-3 mb-3">
+              <div class="text-center text-muted py-5" id="preview-empty-state">
+                <i class="bi bi-diagram-3 fs-1 text-secondary mb-2 d-block"></i>
+                Fill the tournament details and tap <strong>"Generate Bracket Preview"</strong> to view seeded pairings.
+              </div>
+            </div>
+
+            <!-- Publish Button (Locks in tournament & sets to Live) -->
+            <button class="btn btn-success w-100 fw-bold py-2 d-none" id="btn-publish-tournament">
+              <i class="bi bi-check-circle-fill me-1"></i> Publish Tournament &amp; Go Live
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SCREEN 3: S3 — Bracket View (Both Host & Viewer)
+         PRD Section 8, 12: Desktop = All columns with connector lines; Phone = Round tabs
+         ========================================================================= -->
+    <section id="screen-bracket" class="screen-view d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <a href="#tournaments" class="btn btn-sm btn-secondary-eb mb-2" id="btn-bracket-back">
+            <i class="bi bi-arrow-left me-1"></i> Back to Tournaments
+          </a>
+          <h2 class="h3 fw-bold mb-1" id="bracket-tournament-name">Tournament Bracket</h2>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge badge-live" id="bracket-tournament-status">Live</span>
+            <span class="text-muted small" id="bracket-tournament-game"></span>
+          </div>
+        </div>
+
+        <!-- Host Hint -->
+        <div id="bracket-host-hint" class="small text-muted border border-secondary px-3 py-1 rounded d-none">
+          <i class="bi bi-info-circle text-primary-eb me-1"></i> Host Mode: Click any match to enter scores or start matches.
+        </div>
+      </div>
+
+      <!-- Mobile Round Tabs Navigation (PRD Section 12: Phone < 576px) -->
+      <div id="bracket-mobile-tabs" class="d-flex gap-2 mb-3 overflow-auto pb-1 d-md-none">
+        <!-- Rendered dynamically for mobile round-by-round viewing -->
+      </div>
+
+      <!-- Bracket Container (Renders Round Columns on Desktop / Single Round on Mobile) -->
+      <div class="eb-card p-3 overflow-auto" id="bracket-tree-container">
+        <!-- Rendered dynamically by renderBracketView() -->
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SCREEN 4: S4 — Match Panel (Host Only Screen & Drawer)
+         PRD Section 8, 12: Laptop = right-side drawer; Tablet = modal; Mobile = sheet
+         ========================================================================= -->
+    <section id="screen-match-panel" class="screen-view d-none">
+      <div class="eb-card p-4 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="fw-bold mb-0"><i class="bi bi-controller text-primary-eb me-2"></i>Match Management Panel (S4)</h4>
+          <button class="btn btn-sm btn-secondary-eb" onclick="showScreen('bracket')">
+            <i class="bi bi-arrow-left me-1"></i> Back to Bracket
+          </button>
+        </div>
+        <p class="text-muted mb-0">In Host Mode, click any active or upcoming match on the Bracket to open the score stepper drawer, mark matches LIVE, enter final scores, and advance winners.</p>
+      </div>
+    </section>
+
+    <div class="offcanvas offcanvas-end offcanvas-eb" tabindex="-1" id="matchPanelOffcanvas" aria-labelledby="matchPanelLabel">
+      <div class="offcanvas-header">
+        <div>
+          <h5 class="offcanvas-title fw-bold" id="matchPanelLabel">Match Management</h5>
+          <span class="badge badge-upcoming" id="mp-round-badge">Round 1</span>
+          <span class="badge bg-secondary-subtle text-muted" id="mp-format-badge">Best of 1</span>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+
+      <div class="offcanvas-body d-flex flex-column justify-content-between">
+        <div>
+          <!-- Match Status Header -->
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <span class="text-muted small">Status:</span>
+            <span class="badge badge-upcoming" id="mp-status-badge">Upcoming</span>
+          </div>
+
+          <!-- Start Match Trigger -->
+          <div id="mp-start-container" class="mb-4">
+            <button class="btn btn-outline-danger w-100 fw-bold d-flex align-items-center justify-content-center gap-2" id="mp-btn-start">
+              <i class="bi bi-play-circle-fill fs-5"></i>
+              <span>Start Match (Mark LIVE)</span>
+            </button>
+            <div id="mp-waiting-notice" class="small text-muted text-center mt-2 d-none">
+              <i class="bi bi-clock-history me-1"></i> Waiting for previous round winners before this match can start.
+            </div>
+          </div>
+
+          <!-- Score Steppers Form -->
+          <form id="mp-score-form" onsubmit="return false;">
+            <!-- Team A -->
+            <div class="score-stepper-box mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold fs-5 text-truncate" id="mp-teamA-name">Team A</span>
+                <span class="badge bg-secondary" id="mp-teamA-seed">Seed 1</span>
+              </div>
+              <div class="d-flex justify-content-center align-items-center gap-3">
+                <button type="button" class="stepper-btn" id="mp-teamA-dec"><i class="bi bi-dash"></i></button>
+                <input type="number" min="0" max="99" class="score-display-input tabular-nums" id="mp-input-scoreA" value="0">
+                <button type="button" class="stepper-btn" id="mp-teamA-inc"><i class="bi bi-plus"></i></button>
+              </div>
+            </div>
+
+            <!-- VS Divider -->
+            <div class="text-center my-2 text-muted fw-bold small">VS</div>
+
+            <!-- Team B -->
+            <div class="score-stepper-box mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold fs-5 text-truncate" id="mp-teamB-name">Team B</span>
+                <span class="badge bg-secondary" id="mp-teamB-seed">Seed 2</span>
+              </div>
+              <div class="d-flex justify-content-center align-items-center gap-3">
+                <button type="button" class="stepper-btn" id="mp-teamB-dec"><i class="bi bi-dash"></i></button>
+                <input type="number" min="0" max="99" class="score-display-input tabular-nums" id="mp-input-scoreB" value="0">
+                <button type="button" class="stepper-btn" id="mp-teamB-inc"><i class="bi bi-plus"></i></button>
+              </div>
+            </div>
+
+            <!-- Validation Error Alert -->
+            <div id="mp-error-alert" class="alert alert-danger py-2 small d-none" role="alert"></div>
+          </form>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-4 pt-3 border-top border-secondary">
+          <button type="button" class="btn btn-primary-eb w-100 fw-bold py-2 mb-2" id="mp-btn-save">
+            <i class="bi bi-check2-circle me-1"></i> Save Result &amp; Advance Winner
+          </button>
+          <button type="button" class="btn btn-secondary-eb w-100 btn-sm" data-bs-dismiss="offcanvas">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal for Editing Results (PRD S4 & US-06) -->
+    <div class="modal fade" id="resetConfirmModal" tabindex="-1" aria-labelledby="resetConfirmModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border border-secondary shadow">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title text-warning" id="resetConfirmModalLabel">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>Reset Later Matches?
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p id="resetConfirmMessage">Changing this result will reset 1 later match. Continue?</p>
+            <p class="small text-muted mb-0">The teams and scores of subsequent affected rounds will be cleared to maintain bracket integrity.</p>
+          </div>
+          <div class="modal-footer border-secondary">
+            <button type="button" class="btn btn-secondary-eb btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger btn-sm fw-bold" id="btn-confirm-reset-save">
+              Confirm &amp; Reset Affected Matches
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         SCREEN 5: S5 — Live Dashboard (Viewer / Projector)
+         PRD Section 8, 10, 11, 12, 13
+         ========================================================================= -->
+    <section id="screen-live" class="screen-view d-none">
+      <!-- Dashboard Header -->
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="h3 fw-bold mb-1">
+            <i class="bi bi-broadcast text-danger me-2"></i>Live Match Results Stream
+          </h2>
+          <p class="text-muted mb-0 small">Real-time scores, recent results ticker, and team status.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <!-- Active Tournament Selector -->
+          <select class="form-select form-select-sm" id="live-tournament-select" style="min-width: 200px;"></select>
+          <!-- Projector Mode Toggle Button -->
+          <button class="btn btn-secondary-eb btn-sm d-flex align-items-center gap-1" id="btn-projector-toggle">
+            <i class="bi bi-fullscreen"></i>
+            <span id="projector-toggle-text">Projector Mode</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Champion Announcement Banner (PRD S5 & Section 11: Champion Banner) -->
+      <div id="live-champion-banner" class="champion-banner mb-4 d-none">
+        <i class="bi bi-trophy-fill text-warning fs-1 d-block mb-2"></i>
+        <h3 class="fw-bold mb-1" id="live-champion-title">CampusClash 2026 Champion!</h3>
+        <p class="fs-4 text-success fw-bold mb-0" id="live-champion-team">Team Nova</p>
+      </div>
+
+      <!-- Results Ticker (PRD S5: Results Ticker - latest 10, newest first) -->
+      <div class="ticker-container mb-4">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-danger text-uppercase fw-bold"><i class="bi bi-clock-history me-1"></i>Ticker</span>
+          <div class="d-flex gap-2 overflow-auto py-1 flex-grow-1" id="live-ticker-feed">
+            <!-- Ticker items dynamically injected -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Follow-A-Team Card (PRD S5 & US-07: "follow my team and see my next match at the top") -->
+      <div class="followed-team-card p-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-star-fill text-warning fs-5"></i>
+            <span class="fw-bold">Follow Your Team</span>
+          </div>
+          <div style="min-width: 220px;">
+            <select class="form-select form-select-sm" id="select-followed-team">
+              <option value="">-- Choose a team to follow --</option>
+            </select>
+          </div>
+        </div>
+        <div id="followed-team-status-box" class="p-2 rounded bg-dark bg-opacity-50 mt-2">
+          <span class="text-muted small">Select your team above to see your next opponent and call time.</span>
+        </div>
+      </div>
+
+      <!-- Main Live Grid: Live Matches + Up Next Queue -->
+      <div class="row g-4">
+        <!-- Live Now Column -->
+        <div class="col-lg-7 col-md-12">
+          <div class="eb-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                <span class="badge badge-live">LIVE</span>
+                <span>Active Matches Now</span>
+              </h5>
+              <small class="text-muted" id="live-sync-indicator"><i class="bi bi-arrow-repeat me-1"></i>Auto-sync: On</small>
+            </div>
+            
+            <div id="live-now-container" class="d-flex flex-column gap-3">
+              <!-- Live match cards rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Up Next Column -->
+        <div class="col-lg-5 col-md-12">
+          <div class="eb-card h-100">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+              <i class="bi bi-clock text-primary-eb"></i>
+              <span>Up Next on Stage</span>
+            </h5>
+            
+            <div id="up-next-container" class="d-flex flex-column gap-2">
+              <!-- Up next matches rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SCREEN 6: S6 — Matches Table (Both Host & Viewer)
+         PRD Section 8, US-10
+         ========================================================================= -->
+    <section id="screen-matches" class="screen-view d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h2 class="h3 fw-bold mb-1">
+            <i class="bi bi-table text-primary-eb me-2"></i>Tournament Matches Table
+          </h2>
+          <p class="text-muted mb-0 small">Filter by round, status, or search for any team's matches.</p>
+        </div>
+        <button class="btn btn-primary-eb btn-sm d-flex align-items-center gap-1" id="btn-export-csv">
+          <i class="bi bi-download"></i>
+          <span>Export CSV</span>
+        </button>
+      </div>
+
+      <!-- Filters & Search Bar -->
+      <div class="eb-card p-3 mb-3">
+        <div class="row g-2 align-items-center">
+          <!-- Search by Team -->
+          <div class="col-md-5 col-12">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control form-control-sm" id="matches-search-input" placeholder="Search by team name...">
+            </div>
+          </div>
+          <!-- Filter by Round -->
+          <div class="col-md-3 col-6">
+            <select class="form-select form-select-sm" id="matches-filter-round">
+              <option value="all">All Rounds</option>
+            </select>
+          </div>
+          <!-- Filter by Status -->
+          <div class="col-md-4 col-6">
+            <select class="form-select form-select-sm" id="matches-filter-status">
+              <option value="all">All Statuses</option>
+              <option value="Live">Live Only</option>
+              <option value="Done">Completed</option>
+              <option value="Upcoming">Upcoming</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="eb-card p-0 overflow-auto">
+        <table class="table table-eb table-hover mb-0" id="matches-table">
+          <thead>
+            <tr>
+              <th scope="col" style="width: 100px;">Match</th>
+              <th scope="col">Round</th>
+              <th scope="col">Team A</th>
+              <th scope="col" class="text-center" style="width: 110px;">Score</th>
+              <th scope="col">Team B</th>
+              <th scope="col">Status</th>
+              <th scope="col">Winner</th>
+            </tr>
+          </thead>
+          <tbody id="matches-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification Container (PRD Section 9: Toast) -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- Footer -->
+  <footer class="text-center">
+    <div class="container">
+      <p class="mb-0 text-muted">EsportsBracket &bull; PST_PD_041 &bull; Sanjukta Kalita &amp; Akshat Kumar</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+  <!-- Application Modules -->
+  <script src="js/store.js"></script>
+  <script src="js/bracket.js"></script>
+  <script src="js/live.js"></script>
+  
+  <!-- Main Application Logic (Phase 1, Phase 2 & Phase 3 Features) -->
+  <script>
+    // State variables (PRD Section 10: UI-only variables in memory)
+    let currentTournamentId = 't_cc26'; // Default to CampusClash 2026
+    let currentDraftTournament = null;
+    let activeMatchId = null;
+    let selectedMobileRound = 1;
+    let matchOffcanvasInstance = null;
+    let resetModalInstance = null;
+    let pendingResultSave = null;
+    let currentScreen = 'tournaments';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Initialize sample data if first visit
+      await Store.initSeedData();
+
+      // 2. Initialize Bootstrap modals and drawers
+      const offcanvasEl = document.getElementById('matchPanelOffcanvas');
+      if (offcanvasEl) matchOffcanvasInstance = new bootstrap.Offcanvas(offcanvasEl);
+
+      const modalEl = document.getElementById('resetConfirmModal');
+      if (modalEl) resetModalInstance = new bootstrap.Modal(modalEl);
+
+      // Set default date in create form
+      const dateInput = document.getElementById('create-date');
+      if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+
+      // 3. Render initial views and controllers
+      renderTournamentList();
+      setupRoleSwitcher();
+      setupNavigation();
+      setupScreenS2Controllers();
+      setupScreenS4Controllers();
+      setupScreenS5Controllers();
+      setupScreenS6Controllers();
+
+      // 4. Initialize Multi-Tab Live Sync (PRD Section 10: live.js)
+      LiveSync.initLiveSync();
+      LiveSync.onDataUpdate((source) => {
+        // Refresh whichever view is currently active
+        renderTournamentList();
+        const tournament = Store.getTournamentById(currentTournamentId);
+        if (tournament) {
+          if (currentScreen === 'bracket') renderBracketView(tournament);
+          if (currentScreen === 'live') renderLiveDashboard();
+          if (currentScreen === 'matches') renderMatchesTable();
+        }
+      });
+    });
+
+    // =========================================================================
+    // UI Helpers: Toast Notifications
+    // =========================================================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toastEl = document.createElement('div');
+      toastEl.className = 'toast eb-toast align-items-center show mb-2';
+      toastEl.setAttribute('role', 'alert');
+      toastEl.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            <i class="bi bi-info-circle-fill text-primary-eb me-2"></i>
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+      `;
+      container.appendChild(toastEl);
+      setTimeout(() => {
+        toastEl.remove();
+      }, 3500);
+    }
+
+    // =========================================================================
+    // SCREEN 1: Tournaments List
+    // =========================================================================
+    function renderTournamentList() {
+      const grid = document.getElementById('tournaments-grid');
+      const tournaments = Store.getTournaments();
+
+      if (!tournaments || tournaments.length === 0) {
+        grid.innerHTML = `
+          <div class="col-12 text-center text-muted py-5">
+            <p>No tournaments yet. Click "New Tournament" to create one.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = tournaments.map(t => {
+        const isLive = t.status === 'Live';
+        const isCompleted = t.status === 'Completed';
+        const badgeClass = isLive ? 'badge-live' : (isCompleted ? 'badge-done' : 'badge-upcoming');
+        const champ = t.championId ? t.teams.find(tm => tm.id === t.championId) : null;
+        const championText = champ ? `Champion: <strong class="text-success">${champ.name}</strong>` : '';
+
+        return `
+          <div class="col-md-6 col-lg-4">
+            <div class="eb-card h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="badge ${badgeClass}">${t.status}</span>
+                  <small class="text-muted">${t.date || ''}</small>
+                </div>
+                <h5 class="fw-bold mb-1">${t.name}</h5>
+                <p class="text-muted small mb-2"><i class="bi bi-controller me-1"></i>${t.game}</p>
+                <p class="small text-muted mb-3"><i class="bi bi-people me-1"></i>${t.teams.length} Teams (${t.bracketSize}-slot bracket)</p>
+                ${championText ? `<p class="small mb-3"><i class="bi bi-trophy-fill text-warning me-1"></i>${championText}</p>` : ''}
+              </div>
+              <button class="btn btn-sm btn-secondary-eb w-100" onclick="openTournamentBracket('${t.id}')">
+                <i class="bi bi-diagram-3 me-1"></i> View Bracket
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Open Bracket View for specific tournament
+    function openTournamentBracket(id) {
+      currentTournamentId = id;
+      const tournament = Store.getTournamentById(id);
+      if (!tournament) return;
+
+      document.getElementById('bracket-tournament-name').textContent = tournament.name;
+      document.getElementById('bracket-tournament-game').textContent = `${tournament.game} • ${tournament.teams.length} Teams`;
+      
+      const statusBadge = document.getElementById('bracket-tournament-status');
+      statusBadge.textContent = tournament.status;
+      statusBadge.className = `badge ${tournament.status === 'Live' ? 'badge-live' : (tournament.status === 'Completed' ? 'badge-done' : 'badge-upcoming')}`;
+
+      // Update host hint visibility
+      const isHost = Store.getSession().role === 'host';
+      const hostHint = document.getElementById('bracket-host-hint');
+      if (hostHint) {
+        if (isHost && tournament.status !== 'Completed') hostHint.classList.remove('d-none');
+        else hostHint.classList.add('d-none');
+      }
+
+      selectedMobileRound = 1;
+      renderBracketView(tournament);
+      showScreen('bracket');
+    }
+
+    // =========================================================================
+    // SCREEN 2: S2 — Create Tournament Controller (Sanjukta's Scope)
+    // =========================================================================
+    function setupScreenS2Controllers() {
+      const btnGenerate = document.getElementById('btn-generate-bracket');
+      const btnSwap = document.getElementById('btn-do-swap');
+      const btnPublish = document.getElementById('btn-publish-tournament');
+
+      // Generate Preview Click
+      btnGenerate.addEventListener('click', () => {
+        const name = document.getElementById('create-name').value.trim();
+        const game = document.getElementById('create-game').value.trim();
+        const date = document.getElementById('create-date').value;
+        const rawTeams = document.getElementById('create-teams-textarea').value;
+        const bestOfChoice = document.querySelector('input[name="create-best-of"]:checked').value;
+        const seedingChoice = document.querySelector('input[name="create-seeding"]:checked').value;
+        const errAlert = document.getElementById('create-error-alert');
+
+        if (!name || !game) {
+          errAlert.textContent = "Please provide both Tournament Name and Game Title.";
+          errAlert.classList.remove('d-none');
+          return;
+        }
+
+        // Validate team names using pure BracketEngine
+        const validation = BracketEngine.validateTeamNames(rawTeams);
+        if (!validation.isValid) {
+          errAlert.innerHTML = `<strong>Please fix the following:</strong><br>${validation.errors.join('<br>')}`;
+          errAlert.classList.remove('d-none');
+          return;
+        }
+
+        errAlert.classList.add('d-none');
+
+        const bestOfConfig = bestOfChoice === 'bo1-bo3' ? { default: 1, final: 3 } : { default: 1, final: 1 };
+
+        // Generate tournament draft
+        try {
+          currentDraftTournament = BracketEngine.generateTournament(validation.teams, seedingChoice, {
+            name,
+            game,
+            date,
+            status: 'Draft',
+            bestOf: bestOfConfig
+          });
+
+          renderDraftPreview(currentDraftTournament);
+          showToast(`Bracket generated for ${validation.teams.length} teams.`);
+        } catch (err) {
+          errAlert.textContent = err.message;
+          errAlert.classList.remove('d-none');
+        }
+      });
+
+      // Swap Teams Click
+      btnSwap.addEventListener('click', () => {
+        if (!currentDraftTournament) return;
+        const idx1 = parseInt(document.getElementById('swap-select-1').value, 10);
+        const idx2 = parseInt(document.getElementById('swap-select-2').value, 10);
+
+        if (idx1 === idx2) {
+          showToast("Please choose two different teams to swap.", "warning");
+          return;
+        }
+
+        const teamA = currentDraftTournament.teams[idx1].name;
+        const teamB = currentDraftTournament.teams[idx2].name;
+
+        currentDraftTournament = BracketEngine.swapTeams(currentDraftTournament, idx1, idx2);
+        renderDraftPreview(currentDraftTournament);
+        showToast(`Swapped seeds: "${teamA}" and "${teamB}".`);
+      });
+
+      // Publish Tournament Click
+      btnPublish.addEventListener('click', () => {
+        if (!currentDraftTournament) return;
+
+        currentDraftTournament.status = 'Live';
+        Store.saveTournament(currentDraftTournament);
+        renderTournamentList();
+
+        showToast(`Tournament "${currentDraftTournament.name}" is now LIVE!`);
+        openTournamentBracket(currentDraftTournament.id);
+        currentDraftTournament = null;
+      });
+    }
+
+    // Render Preview in Screen S2
+    function renderDraftPreview(tournament) {
+      const container = document.getElementById('preview-matches-container');
+      const noteBadge = document.getElementById('preview-bracket-note');
+      const swapPanel = document.getElementById('swap-teams-panel');
+      const btnPublish = document.getElementById('btn-publish-tournament');
+
+      const byes = BracketEngine.calculateByes(tournament.teams.length);
+      const byeNote = byes > 0 ? ` · ${byes} byes for seeds 1–${byes}` : ' · No byes';
+      noteBadge.textContent = `${tournament.bracketSize}-slot bracket ready${byeNote}`;
+      noteBadge.className = 'badge bg-primary text-dark fw-bold border border-primary';
+
+      // Populate Swap Selects
+      const select1 = document.getElementById('swap-select-1');
+      const select2 = document.getElementById('swap-select-2');
+      const optionsHtml = tournament.teams.map((t, idx) => `
+        <option value="${idx}">Seed ${t.seed}: ${t.name}</option>
+      `).join('');
+      select1.innerHTML = optionsHtml;
+      select2.innerHTML = optionsHtml;
+      if (tournament.teams.length > 1) select2.selectedIndex = 1;
+
+      swapPanel.classList.remove('d-none');
+      btnPublish.classList.remove('d-none');
+
+      // Render Round 1 Matchups Preview
+      const round1Matches = tournament.matches.filter(m => m.round === 1);
+      container.innerHTML = `
+        <h6 class="text-muted small fw-bold mb-3 text-uppercase">Round 1 Pairings &amp; BYE Placements</h6>
+        <div class="row g-2">
+          ${round1Matches.map(m => {
+            const teamA = tournament.teams.find(t => t.id === m.teamA);
+            const teamB = tournament.teams.find(t => t.id === m.teamB);
+
+            if (m.isBye) {
+              return `
+                <div class="col-12">
+                  <div class="preview-match-card has-bye d-flex justify-content-between align-items-center">
+                    <div>
+                      <span class="team-pill seed-badge">Seed ${teamA ? teamA.seed : '?'}</span>
+                      <strong class="text-light">${teamA ? teamA.name : 'Unknown'}</strong>
+                    </div>
+                    <span class="badge badge-bye text-uppercase">BYE &rarr; Advances to R2</span>
+                  </div>
+                </div>
+              `;
+            }
+
+            return `
+              <div class="col-12">
+                <div class="preview-match-card d-flex justify-content-between align-items-center">
+                  <div>
+                    <span class="team-pill seed-badge">Seed ${teamA ? teamA.seed : '?'}</span>
+                    <strong class="text-light">${teamA ? teamA.name : 'TBD'}</strong>
+                  </div>
+                  <span class="badge bg-secondary-subtle text-muted">VS</span>
+                  <div class="text-end">
+                    <strong class="text-light">${teamB ? teamB.name : 'TBD'}</strong>
+                    <span class="team-pill seed-badge">Seed ${teamB ? teamB.seed : '?'}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // SCREEN 3: Bracket Rendering (Akshat's Scope: Mobile Tabs + Column Tree)
+    // PRD Section 12: Phone (< 576px) = Round tabs; Laptop (>= 992px) = Columns with lines
+    // =========================================================================
+    function renderBracketView(tournament) {
+      const container = document.getElementById('bracket-tree-container');
+      const mobileTabsContainer = document.getElementById('bracket-mobile-tabs');
+      const isHost = Store.getSession().role === 'host';
+      const totalRounds = tournament.totalRounds || Math.log2(tournament.bracketSize);
+
+      // Render Mobile Round Tabs
+      let tabsHtml = '';
+      for (let r = 1; r <= totalRounds; r++) {
+        const roundName = BracketEngine.getRoundName(r, totalRounds);
+        const isActive = r === selectedMobileRound;
+        tabsHtml += `
+          <button class="round-nav-pill ${isActive ? 'active' : ''}" onclick="switchMobileRound(${r})">
+            ${roundName}
+          </button>
+        `;
+      }
+      mobileTabsContainer.innerHTML = tabsHtml;
+
+      // Render Multi-Column Tree (Responsive: full tree on desktop, selected round on mobile)
+      let html = '<div class="d-flex flex-nowrap gap-4 pb-2">';
+
+      for (let r = 1; r <= totalRounds; r++) {
+        const roundMatches = tournament.matches.filter(m => m.round === r);
+        const roundName = BracketEngine.getRoundName(r, totalRounds);
+        const isCurrentMobileRound = r === selectedMobileRound;
+
+        // Mobile classes hide non-selected rounds on phones (< 768px), but show all on larger screens (d-md-flex)
+        const mobileVisibilityClass = isCurrentMobileRound ? 'd-flex' : 'd-none d-md-flex';
+
+        html += `
+          <div class="bracket-round-column flex-column ${mobileVisibilityClass}" style="min-width: 260px; flex: 1;">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary">
+              <h6 class="fw-bold mb-0 text-primary-eb text-uppercase small">${roundName}</h6>
+              <span class="badge bg-secondary-subtle text-muted small">${roundMatches.length} Matches</span>
+            </div>
+            <div class="d-flex flex-column gap-3 justify-content-around h-100">
+              ${roundMatches.map(m => renderMatchBoxHtml(tournament, m, isHost)).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function switchMobileRound(roundNum) {
+      selectedMobileRound = roundNum;
+      const tournament = Store.getTournamentById(currentTournamentId);
+      if (tournament) renderBracketView(tournament);
+    }
+
+    function renderMatchBoxHtml(tournament, match, isHost) {
+      const teamA = match.teamA ? tournament.teams.find(t => t.id === match.teamA) : null;
+      const teamB = match.teamB ? tournament.teams.find(t => t.id === match.teamB) : null;
+
+      const isLive = match.status === 'Live';
+      const isDone = match.status === 'Done';
+      const isBye = match.isBye === true;
+
+      const winnerA = match.winnerId && match.winnerId === match.teamA;
+      const winnerB = match.winnerId && match.winnerId === match.teamB;
+      const winnerName = winnerA ? (teamA ? teamA.name : 'Team A') : (winnerB ? (teamB ? teamB.name : 'Team B') : '');
+
+      const totalRounds = tournament.totalRounds || Math.log2(tournament.bracketSize);
+      const roundName = BracketEngine.getRoundName(match.round, totalRounds);
+
+      // Accessible aria-label (PRD Section 11 & 13)
+      let ariaLabel = `${roundName} Match ${match.id}: `;
+      if (isBye) {
+        ariaLabel += `${teamA ? teamA.name : 'Team'} received a BYE and advances to next round`;
+      } else if (isDone) {
+        ariaLabel += `${teamA ? teamA.name : 'Team A'} ${match.scoreA}, ${teamB ? teamB.name : 'Team B'} ${match.scoreB}, finished, ${winnerName} won`;
+      } else if (isLive) {
+        ariaLabel += `${teamA ? teamA.name : 'Team A'} vs ${teamB ? teamB.name : 'Team B'}, LIVE, score ${match.scoreA} to ${match.scoreB}`;
+      } else {
+        ariaLabel += `${teamA ? teamA.name : 'TBD'} vs ${teamB ? teamB.name : 'TBD'}, upcoming match`;
+      }
+
+      const canClick = isHost && !isBye;
+
+      return `
+        <div class="eb-card p-2 position-relative ${canClick ? 'cursor-pointer' : ''}" 
+             ${canClick ? `role="button" tabindex="0" onclick="openMatchPanel('${match.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openMatchPanel('${match.id}');}"` : ''}
+             aria-label="${ariaLabel}"
+             style="${canClick ? 'cursor: pointer;' : ''} ${isBye ? 'opacity: 0.6; border-style: dashed;' : ''}"
+             title="${canClick ? 'Click or press Enter to manage match scores' : ''}">
+          
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="badge bg-secondary-subtle text-muted" style="font-size: 0.7rem;">${match.id}</span>
+            <span class="badge ${isLive ? 'badge-live' : (isDone ? 'badge-done' : (isBye ? 'badge-bye' : 'badge-upcoming'))}" style="font-size: 0.7rem;">
+              ${match.status}
+            </span>
+          </div>
+
+          <!-- Team A Row -->
+          <div class="d-flex justify-content-between align-items-center p-1 rounded mb-1 ${winnerA ? 'bg-success bg-opacity-25 border-start border-3 border-success' : ''}">
+            <div class="text-truncate">
+              ${teamA ? `<span class="team-pill seed-badge me-1">${teamA.seed}</span>` : ''}
+              <span class="${winnerA ? 'fw-bold text-success' : (teamA ? 'text-light' : 'text-muted small')}">
+                ${teamA ? teamA.name : 'Waiting...'} ${winnerA ? '✓' : ''}
+              </span>
+            </div>
+            <strong class="tabular-nums ms-2 ${winnerA ? 'text-success' : 'text-muted'}">${isDone || isLive ? match.scoreA : '-'}</strong>
+          </div>
+
+          <!-- Team B Row -->
+          <div class="d-flex justify-content-between align-items-center p-1 rounded ${winnerB ? 'bg-success bg-opacity-25 border-start border-3 border-success' : ''}">
+            <div class="text-truncate">
+              ${teamB ? `<span class="team-pill seed-badge me-1">${teamB.seed}</span>` : ''}
+              <span class="${winnerB ? 'fw-bold text-success' : (teamB ? 'text-light' : (isBye ? 'text-muted fst-italic' : 'text-muted small'))}">
+                ${isBye ? 'BYE' : (teamB ? teamB.name : 'Waiting...')} ${winnerB ? '✓' : ''}
+              </span>
+            </div>
+            <strong class="tabular-nums ms-2 ${winnerB ? 'text-success' : 'text-muted'}">${isDone || isLive ? match.scoreB : '-'}</strong>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // SCREEN 4: S4 — Match Panel Controller (Sanjukta's Scope)
+    // =========================================================================
+    function setupScreenS4Controllers() {
+      // Steppers for Team A
+      document.getElementById('mp-teamA-inc').addEventListener('click', () => {
+        const input = document.getElementById('mp-input-scoreA');
+        input.value = Math.max(0, parseInt(input.value || 0, 10) + 1);
+      });
+      document.getElementById('mp-teamA-dec').addEventListener('click', () => {
+        const input = document.getElementById('mp-input-scoreA');
+        input.value = Math.max(0, parseInt(input.value || 0, 10) - 1);
+      });
+
+      // Steppers for Team B
+      document.getElementById('mp-teamB-inc').addEventListener('click', () => {
+        const input = document.getElementById('mp-input-scoreB');
+        input.value = Math.max(0, parseInt(input.value || 0, 10) + 1);
+      });
+      document.getElementById('mp-teamB-dec').addEventListener('click', () => {
+        const input = document.getElementById('mp-input-scoreB');
+        input.value = Math.max(0, parseInt(input.value || 0, 10) - 1);
+      });
+
+      // "Start Match" Trigger
+      document.getElementById('mp-btn-start').addEventListener('click', () => {
+        const tournament = Store.getTournamentById(currentTournamentId);
+        if (!tournament || !activeMatchId) return;
+
+        const match = tournament.matches.find(m => m.id === activeMatchId);
+        if (!match || !match.teamA || !match.teamB) {
+          showToast("Cannot start match until both teams are known.", "warning");
+          return;
+        }
+
+        match.status = 'Live';
+        match.startedAt = new Date().toISOString();
+        Store.saveTournament(tournament);
+
+        document.getElementById('mp-status-badge').textContent = 'Live';
+        document.getElementById('mp-status-badge').className = 'badge badge-live';
+        document.getElementById('mp-btn-start').classList.add('d-none');
+
+        renderBracketView(tournament);
+        showToast(`Match ${match.id} is now LIVE!`);
+      });
+
+      // "Save Result" Trigger
+      document.getElementById('mp-btn-save').addEventListener('click', () => {
+        handleSaveMatchResult();
+      });
+
+      // Reset Modal Confirmation Trigger (for safe editing)
+      document.getElementById('btn-confirm-reset-save').addEventListener('click', () => {
+        if (!pendingResultSave) return;
+        const { tournament, match, scoreA, scoreB, winnerId } = pendingResultSave;
+
+        // Perform safe downstream reset (PRD S4 & US-06)
+        const resetCount = BracketEngine.resetDownstream(tournament, match.id);
+        BracketEngine.advanceWinner(tournament, match.id, winnerId, scoreA, scoreB);
+
+        Store.saveTournament(tournament);
+        resetModalInstance.hide();
+        matchOffcanvasInstance.hide();
+
+        renderBracketView(tournament);
+        renderTournamentList();
+
+        const winnerTeam = tournament.teams.find(t => t.id === winnerId);
+        showToast(`Result updated! ${resetCount} downstream match(es) reset. ${winnerTeam ? winnerTeam.name : 'Winner'} advanced.`);
+        pendingResultSave = null;
+      });
+    }
+
+    // Open Match Panel Drawer for a given Match ID
+    function openMatchPanel(matchId) {
+      if (Store.getSession().role !== 'host') {
+        showToast("Match controls are only accessible in Host Mode.", "warning");
+        return;
+      }
+
+      const tournament = Store.getTournamentById(currentTournamentId);
+      if (!tournament) return;
+
+      const match = tournament.matches.find(m => m.id === matchId);
+      if (!match) return;
+
+      activeMatchId = matchId;
+
+      const teamA = match.teamA ? tournament.teams.find(t => t.id === match.teamA) : null;
+      const teamB = match.teamB ? tournament.teams.find(t => t.id === match.teamB) : null;
+
+      const totalRounds = tournament.totalRounds || Math.log2(tournament.bracketSize);
+      const roundName = BracketEngine.getRoundName(match.round, totalRounds);
+      const isFinal = match.round === totalRounds;
+      const bestOfNum = isFinal ? tournament.bestOf.final : tournament.bestOf.default;
+
+      // Populate Header
+      document.getElementById('matchPanelLabel').textContent = `Match ${match.id}`;
+      document.getElementById('mp-round-badge').textContent = roundName;
+      document.getElementById('mp-format-badge').textContent = `Best of ${bestOfNum}`;
+
+      // Populate Status
+      const statusBadge = document.getElementById('mp-status-badge');
+      statusBadge.textContent = match.status;
+      statusBadge.className = `badge ${match.status === 'Live' ? 'badge-live' : (match.status === 'Done' ? 'badge-done' : 'badge-upcoming')}`;
+
+      // Populate Teams and Inputs
+      document.getElementById('mp-teamA-name').textContent = teamA ? teamA.name : 'TBD';
+      document.getElementById('mp-teamA-seed').textContent = teamA ? `Seed ${teamA.seed}` : 'Waiting';
+      document.getElementById('mp-input-scoreA').value = match.scoreA || 0;
+
+      document.getElementById('mp-teamB-name').textContent = teamB ? teamB.name : 'TBD';
+      document.getElementById('mp-teamB-seed').textContent = teamB ? `Seed ${teamB.seed}` : 'Waiting';
+      document.getElementById('mp-input-scoreB').value = match.scoreB || 0;
+
+      // Start Button visibility
+      const btnStart = document.getElementById('mp-btn-start');
+      const waitingNotice = document.getElementById('mp-waiting-notice');
+      if (match.status === 'Upcoming' && teamA && teamB) {
+        btnStart.classList.remove('d-none');
+        waitingNotice.classList.add('d-none');
+      } else if (!teamA || !teamB) {
+        btnStart.classList.add('d-none');
+        waitingNotice.classList.remove('d-none');
+      } else {
+        btnStart.classList.add('d-none');
+        waitingNotice.classList.add('d-none');
+      }
+
+      document.getElementById('mp-error-alert').classList.add('d-none');
+      matchOffcanvasInstance.show();
+    }
+
+    // Handles Score Validation, Saving & Downstream Warning Checks
+    function handleSaveMatchResult() {
+      const tournament = Store.getTournamentById(currentTournamentId);
+      if (!tournament || !activeMatchId) return;
+
+      const match = tournament.matches.find(m => m.id === activeMatchId);
+      if (!match || !match.teamA || !match.teamB) {
+        showToast("Cannot record results before both teams are determined.", "warning");
+        return;
+      }
+
+      const scoreA = parseInt(document.getElementById('mp-input-scoreA').value, 10);
+      const scoreB = parseInt(document.getElementById('mp-input-scoreB').value, 10);
+      const errAlert = document.getElementById('mp-error-alert');
+
+      // 1. Validation (PRD Section 8 & 11)
+      if (isNaN(scoreA) || isNaN(scoreB) || scoreA < 0 || scoreB < 0) {
+        errAlert.textContent = "Scores must be valid non-negative numbers.";
+        errAlert.classList.remove('d-none');
+        return;
+      }
+
+      if (scoreA === scoreB) {
+        errAlert.textContent = "Draw score not allowed. An esports match must have a winner.";
+        errAlert.classList.remove('d-none');
+        return;
+      }
+
+      const totalRounds = tournament.totalRounds || Math.log2(tournament.bracketSize);
+      const isFinal = match.round === totalRounds;
+      const bestOfNum = isFinal ? tournament.bestOf.final : tournament.bestOf.default;
+
+      if (bestOfNum === 3) {
+        const maxScore = Math.max(scoreA, scoreB);
+        const minScore = Math.min(scoreA, scoreB);
+        if (maxScore !== 2 || minScore > 1) {
+          errAlert.textContent = "In Best of 3, the winner must have exactly 2 map wins (2–0 or 2–1).";
+          errAlert.classList.remove('d-none');
+          return;
+        }
+      }
+
+      errAlert.classList.add('d-none');
+      const winnerId = scoreA > scoreB ? match.teamA : match.teamB;
+
+      // 2. Check if editing an already completed match with downstream impact (PRD S4 & US-06)
+      if (match.status === 'Done' && match.winnerId && match.winnerId !== winnerId) {
+        const downstream = BracketEngine.getDownstreamMatches(tournament, match.id);
+        const affectedPlayedCount = downstream.filter(m => m.status === 'Done' || m.status === 'Live' || m.winnerId !== null).length;
+
+        if (affectedPlayedCount > 0) {
+          pendingResultSave = { tournament, match, scoreA, scoreB, winnerId };
+          document.getElementById('resetConfirmMessage').textContent = 
+            `Changing this result will reset ${affectedPlayedCount} later match(es). Continue?`;
+          resetModalInstance.show();
+          return;
+        }
+      }
+
+      // 3. Normal Save & Advance Winner
+      BracketEngine.advanceWinner(tournament, match.id, winnerId, scoreA, scoreB);
+      Store.saveTournament(tournament);
+
+      matchOffcanvasInstance.hide();
+      renderBracketView(tournament);
+      renderTournamentList();
+
+      const winnerTeam = tournament.teams.find(t => t.id === winnerId);
+      const isChampion = tournament.championId === winnerId;
+      const message = isChampion 
+        ? `${winnerTeam.name} are CampusClash Champions!` 
+        : `${winnerTeam.name} advance to the next round!`;
+
+      showToast(message);
+    }
+
+    // =========================================================================
+    // SCREEN 5: S5 — Live Dashboard Controller (Akshat's Scope)
+    // PRD Section 8, 10, 11, 12, 13
+    // =========================================================================
+    function setupScreenS5Controllers() {
+      // Tournament selector in Live Dashboard
+      const tournSelect = document.getElementById('live-tournament-select');
+      tournSelect.addEventListener('change', (e) => {
+        currentTournamentId = e.target.value;
+        renderLiveDashboard();
+      });
+
+      // Follow A Team dropdown
+      const teamSelect = document.getElementById('select-followed-team');
+      teamSelect.addEventListener('change', (e) => {
+        Store.setFollowedTeam(e.target.value);
+        renderFollowedTeamStatus();
+      });
+
+      // Projector Mode Fullscreen Toggle (PRD S5 & Section 12)
+      const btnProjector = document.getElementById('btn-projector-toggle');
+      btnProjector.addEventListener('click', () => {
+        document.body.classList.toggle('projector-fullscreen');
+        const isProjector = document.body.classList.contains('projector-fullscreen');
+        document.getElementById('projector-toggle-text').textContent = isProjector ? 'Exit Projector' : 'Projector Mode';
+        showToast(isProjector ? "Projector Mode activated (Enlarged text >= 24px)." : "Exited Projector Mode.");
+      });
+    }
+
+    function renderLiveDashboard() {
+      const tournaments = Store.getTournaments();
+      const tournSelect = document.getElementById('live-tournament-select');
+
+      // Populate tournaments select if options differ
+      tournSelect.innerHTML = tournaments.map(t => `
+        <option value="${t.id}" ${t.id === currentTournamentId ? 'selected' : ''}>${t.name} (${t.status})</option>
+      `).join('');
+
+      const tournament = Store.getTournamentById(currentTournamentId) || tournaments[0];
+      if (!tournament) return;
+
+      currentTournamentId = tournament.id;
+
+      // 1. Champion Banner
+      const championBanner = document.getElementById('live-champion-banner');
+      if (tournament.status === 'Completed' && tournament.championId) {
+        const champ = tournament.teams.find(t => t.id === tournament.championId);
+        document.getElementById('live-champion-title').textContent = `${tournament.name} Champions!`;
+        document.getElementById('live-champion-team').textContent = champ ? champ.name : 'Unknown';
+        championBanner.classList.remove('d-none');
+      } else {
+        championBanner.classList.add('d-none');
+      }
+
+      // 2. Results Ticker (Latest 10 Finished Matches - PRD S5)
+      const tickerFeed = document.getElementById('live-ticker-feed');
+      const recentResults = LiveSync.getRecentResults(tournament, 10);
+      if (recentResults.length === 0) {
+        tickerFeed.innerHTML = '<span class="text-muted small">No matches concluded yet.</span>';
+      } else {
+        tickerFeed.innerHTML = recentResults.map(m => {
+          const teamA = tournament.teams.find(t => t.id === m.teamA)?.name || 'Team A';
+          const teamB = tournament.teams.find(t => t.id === m.teamB)?.name || 'Team B';
+          return `
+            <div class="ticker-item">
+              <span class="badge bg-secondary-subtle text-muted" style="font-size: 0.7rem;">${m.id}</span>
+              <strong class="text-light">${teamA}</strong>
+              <span class="text-warning fw-bold tabular-nums">${m.scoreA}–${m.scoreB}</span>
+              <strong class="text-light">${teamB}</strong>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 3. Follow A Team Selector & Card
+      const teamSelect = document.getElementById('select-followed-team');
+      const followedTeamId = Store.getSession().followedTeamId;
+      teamSelect.innerHTML = '<option value="">-- Choose a team to follow --</option>' + 
+        tournament.teams.map(t => `<option value="${t.id}" ${t.id === followedTeamId ? 'selected' : ''}>${t.name} (Seed ${t.seed})</option>`).join('');
+
+      renderFollowedTeamStatus();
+
+      // 4. "Live Now" Cards
+      const liveContainer = document.getElementById('live-now-container');
+      const liveMatches = LiveSync.getLiveMatches(tournament);
+
+      if (liveMatches.length === 0) {
+        liveContainer.innerHTML = `
+          <div class="text-center text-muted py-4 border border-dashed rounded">
+            <i class="bi bi-clock-history fs-3 mb-2 d-block"></i>
+            <p class="mb-0 small">No match live right now — next matches getting ready on stage.</p>
+          </div>
+        `;
+      } else {
+        liveContainer.innerHTML = liveMatches.map(m => {
+          const teamA = tournament.teams.find(t => t.id === m.teamA)?.name || 'TBD';
+          const teamB = tournament.teams.find(t => t.id === m.teamB)?.name || 'TBD';
+          const totalRounds = tournament.totalRounds || Math.log2(tournament.bracketSize);
+          const roundName = BracketEngine.getRoundName(m.round, totalRounds);
+
+          return `
+            <div class="live-match-card p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge badge-live">LIVE NOW</span>
+                <span class="text-muted small">${roundName} • ${m.id}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="text-truncate flex-grow-1">
+                  <h5 class="fw-bold mb-0 text-light projector-text-lg">${teamA}</h5>
+                </div>
+                <div class="mx-3 text-center">
+                  <span class="fs-2 fw-bold text-danger tabular-nums projector-score-lg">${m.scoreA} : ${m.scoreB}</span>
+                </div>
+                <div class="text-truncate text-end flex-grow-1">
+                  <h5 class="fw-bold mb-0 text-light projector-text-lg">${teamB}</h5>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 5. "Up Next" Queue
+      const upNextContainer = document.getElementById('up-next-container');
+      const upNextMatches = LiveSync.getUpNextMatches(tournament, 5);
+
+      if (upNextMatches.length === 0) {
+        upNextContainer.innerHTML = `
+          <div class="text-center text-muted py-4 border border-dashed rounded">
+            <p class="mb-0 small">No upcoming scheduled matches in queue.</p>
+          </div>
+        `;
+      } else {
+        upNextContainer.innerHTML = upNextMatches.map(m => {
+          const teamA = tournament.teams.find(t => t.id === m.teamA)?.name || 'TBD';
+          const teamB = tournament.teams.find(t => t.id === m.teamB)?.name || 'TBD';
+          const totalRounds = tournament.totalRounds || Math.log2(tournament.bracketSize);
+          const roundName = BracketEngine.getRoundName(m.round, totalRounds);
+
+          return `
+            <div class="p-2 rounded bg-dark border border-secondary d-flex justify-content-between align-items-center">
+              <div>
+                <span class="badge bg-secondary-subtle text-muted me-1" style="font-size: 0.7rem;">${m.id}</span>
+                <strong class="text-light small">${teamA}</strong>
+                <span class="text-muted small mx-1">vs</span>
+                <strong class="text-light small">${teamB}</strong>
+              </div>
+              <span class="badge badge-upcoming text-uppercase" style="font-size: 0.7rem;">${roundName}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function renderFollowedTeamStatus() {
+      const statusBox = document.getElementById('followed-team-status-box');
+      const tournament = Store.getTournamentById(currentTournamentId);
+      const followedTeamId = Store.getSession().followedTeamId;
+
+      if (!tournament || !followedTeamId) {
+        statusBox.innerHTML = '<span class="text-muted small">Select your team above to see your next opponent and call time.</span>';
+        return;
+      }
+
+      const teamStatus = LiveSync.getFollowedTeamStatus(tournament, followedTeamId);
+      if (!teamStatus) {
+        statusBox.innerHTML = '<span class="text-muted small">Team not found in this tournament.</span>';
+        return;
+      }
+
+      let badgeColor = 'bg-primary';
+      let icon = 'bi-bell-fill';
+      if (teamStatus.status === 'playing') {
+        badgeColor = 'badge-live';
+        icon = 'bi-broadcast';
+      } else if (teamStatus.status === 'eliminated') {
+        badgeColor = 'bg-secondary';
+        icon = 'bi-x-circle-fill';
+      } else if (teamStatus.status === 'champion') {
+        badgeColor = 'bg-success';
+        icon = 'bi-trophy-fill';
+      }
+
+      statusBox.innerHTML = `
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge ${badgeColor}"><i class="bi ${icon} me-1"></i>${teamStatus.status.toUpperCase()}</span>
+          <strong class="text-light">${teamStatus.message}</strong>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // SCREEN 6: S6 — Matches Table Controller (Akshat's Scope)
+    // PRD Section 8, US-10: Round + status filters, search team, Export CSV
+    // =========================================================================
+    function setupScreenS6Controllers() {
+      document.getElementById('matches-search-input').addEventListener('input', renderMatchesTable);
+      document.getElementById('matches-filter-round').addEventListener('change', renderMatchesTable);
+      document.getElementById('matches-filter-status').addEventListener('change', renderMatchesTable);
+      
+      document.getElementById('btn-export-csv').addEventListener('click', () => {
+        const tournament = Store.getTournamentById(currentTournamentId);
+        if (tournament) {
+          LiveSync.exportMatchesToCSV(tournament);
+          showToast(`Exported results for ${tournament.name} as CSV.`);
+        }
+      });
+    }
+
+    function renderMatchesTable() {
+      const tournament = Store.getTournamentById(currentTournamentId);
+      if (!tournament) return;
+
+      const totalRounds = tournament.totalRounds || Math.log2(tournament.bracketSize);
+      
+      // Populate Round Filter if needed
+      const roundFilter = document.getElementById('matches-filter-round');
+      if (roundFilter.options.length <= 1) {
+        let options = '<option value="all">All Rounds</option>';
+        for (let r = 1; r <= totalRounds; r++) {
+          options += `<option value="${r}">${BracketEngine.getRoundName(r, totalRounds)}</option>`;
+        }
+        roundFilter.innerHTML = options;
+      }
+
+      const searchQuery = document.getElementById('matches-search-input').value.trim().toLowerCase();
+      const selectedRound = document.getElementById('matches-filter-round').value;
+      const selectedStatus = document.getElementById('matches-filter-status').value;
+      const tbody = document.getElementById('matches-table-body');
+
+      let matches = [...tournament.matches];
+
+      // Filter by Round
+      if (selectedRound !== 'all') {
+        matches = matches.filter(m => m.round === parseInt(selectedRound, 10));
+      }
+
+      // Filter by Status
+      if (selectedStatus !== 'all') {
+        matches = matches.filter(m => m.status === selectedStatus);
+      }
+
+      // Filter by Search Query (Team A or Team B name)
+      if (searchQuery) {
+        matches = matches.filter(m => {
+          const nameA = m.teamA ? (tournament.teams.find(t => t.id === m.teamA)?.name || '').toLowerCase() : '';
+          const nameB = m.teamB ? (tournament.teams.find(t => t.id === m.teamB)?.name || '').toLowerCase() : '';
+          return nameA.includes(searchQuery) || nameB.includes(searchQuery);
+        });
+      }
+
+      if (matches.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">
+              <i class="bi bi-funnel me-1"></i> No matches match your current search and filter criteria.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = matches.map(m => {
+        const teamA = m.teamA ? tournament.teams.find(t => t.id === m.teamA)?.name : 'TBD';
+        const teamB = m.isBye ? 'BYE' : (m.teamB ? tournament.teams.find(t => t.id === m.teamB)?.name : 'TBD');
+        const winner = m.winnerId ? (tournament.teams.find(t => t.id === m.winnerId)?.name || 'Winner') : '-';
+        const roundName = BracketEngine.getRoundName(m.round, totalRounds);
+
+        let badgeClass = 'badge-upcoming';
+        if (m.status === 'Live') badgeClass = 'badge-live';
+        else if (m.status === 'Done') badgeClass = 'badge-done';
+        else if (m.isBye) badgeClass = 'badge-bye';
+
+        return `
+          <tr>
+            <td><span class="badge bg-secondary-subtle text-muted">${m.id}</span></td>
+            <td><span class="small fw-semibold text-primary-eb">${roundName}</span></td>
+            <td><strong class="text-light">${teamA}</strong></td>
+            <td class="text-center">
+              <span class="badge bg-dark border border-secondary tabular-nums fs-6">
+                ${m.status === 'Done' || m.status === 'Live' ? `${m.scoreA} : ${m.scoreB}` : '- : -'}
+              </span>
+            </td>
+            <td><strong class="${m.isBye ? 'text-muted fst-italic' : 'text-light'}">${teamB}</strong></td>
+            <td><span class="badge ${badgeClass}">${m.status}</span></td>
+            <td><strong class="text-success">${winner}</strong></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Role Switcher Setup
+    function setupRoleSwitcher() {
+      const session = Store.getSession();
+      updateRoleUI(session.role);
+
+      document.getElementById('role-select-host').addEventListener('click', () => {
+        Store.setRole('host');
+        updateRoleUI('host');
+        showToast("Switched to Host Mode. Admin controls unlocked.");
+        if (currentTournamentId) openTournamentBracket(currentTournamentId);
+      });
+
+      document.getElementById('role-select-viewer').addEventListener('click', () => {
+        Store.setRole('viewer');
+        updateRoleUI('viewer');
+        showToast("Switched to Viewer Mode. Read-only access.");
+        if (currentTournamentId) openTournamentBracket(currentTournamentId);
+      });
+    }
+
+    function updateRoleUI(role) {
+      const btn = document.getElementById('roleDropdownBtn');
+      const text = document.getElementById('currentRoleText');
+      const newTournBtn = document.getElementById('btn-header-new-tournament');
+
+      if (role === 'host') {
+        btn.className = 'btn btn-secondary-eb btn-sm dropdown-toggle role-badge host';
+        text.textContent = 'Host Mode';
+        newTournBtn.classList.remove('d-none');
+        document.getElementById('role-select-host').classList.add('active');
+        document.getElementById('role-select-viewer').classList.remove('active');
+      } else {
+        btn.className = 'btn btn-secondary-eb btn-sm dropdown-toggle role-badge viewer';
+        text.textContent = 'Viewer Mode';
+        newTournBtn.classList.add('d-none');
+        document.getElementById('role-select-viewer').classList.add('active');
+        document.getElementById('role-select-host').classList.remove('active');
+      }
+    }
+
+    // Screen Navigation Setup
+    function setupNavigation() {
+      document.getElementById('nav-tournaments').addEventListener('click', (e) => {
+        e.preventDefault();
+        showScreen('tournaments');
+      });
+      document.getElementById('nav-brand').addEventListener('click', (e) => {
+        e.preventDefault();
+        showScreen('tournaments');
+      });
+      document.getElementById('nav-live').addEventListener('click', (e) => {
+        e.preventDefault();
+        renderLiveDashboard();
+        showScreen('live');
+      });
+      document.getElementById('nav-matches').addEventListener('click', (e) => {
+        e.preventDefault();
+        renderMatchesTable();
+        showScreen('matches');
+      });
+      document.getElementById('btn-header-new-tournament').addEventListener('click', () => {
+        showScreen('create');
+      });
+      document.getElementById('btn-back-to-tournaments').addEventListener('click', (e) => {
+        e.preventDefault();
+        showScreen('tournaments');
+      });
+      document.getElementById('btn-bracket-back').addEventListener('click', (e) => {
+        e.preventDefault();
+        showScreen('tournaments');
+      });
+    }
+
+    function showScreen(screenId) {
+      currentScreen = screenId;
+      const screens = document.querySelectorAll('.screen-view');
+      screens.forEach(s => s.classList.add('d-none'));
+
+      const target = document.getElementById(`screen-${screenId}`);
+      if (target) {
+        target.classList.remove('d-none');
+      }
+
+      // Update navbar active link
+      document.querySelectorAll('.navbar-nav .nav-link').forEach(link => link.classList.remove('active'));
+      const activeNav = document.getElementById(`nav-${screenId}`);
+      if (activeNav) activeNav.classList.add('active');
+    }
+  </script>
+</body>
+</html>
